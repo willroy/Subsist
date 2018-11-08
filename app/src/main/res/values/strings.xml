@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Subsist</string>
+    <string name="edit_message">Enter Text Here</string>
+    <string name="button_add">Add</string>
+</resources>
