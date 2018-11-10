@@ -1,9 +1,11 @@
 package com.example.willroy.subsist;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -19,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private ListView lvItems;
     private List<Integer> selected = new ArrayList<>();
     private boolean remove;
-
+    private int count = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,17 +37,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClick(View v) {
-        String empty = new String();
-        TextView input = findViewById(R.id.input_text);
-        String content = input.getText().toString();
-        if (content.equals(empty)) {
+        if (remove == false) {
+            String empty = new String();
+            TextView input = findViewById(R.id.input_text);
+            String content = input.getText().toString();
+//            items.add("String1");
+//            items.add("String2");
+//            items.add("String3");
+            if (content.equals(empty)) {
+            } else {
 
-        } else {
-            itemsAdapter.add(content);
-            input.setText("");
+                itemsAdapter.add(content);
+                input.setText("");
+            }
+            InputMethodManager inputManager = (InputMethodManager)
+                    getSystemService(Context.INPUT_METHOD_SERVICE);
+
+            inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
+                    InputMethodManager.HIDE_NOT_ALWAYS);
+        } else if (remove == true) {
         }
     }
-
 
     private void setupListViewListener() {
         lvItems.setOnItemLongClickListener(
@@ -53,47 +65,47 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public boolean onItemLongClick(AdapterView<?> adapter,
                                                    View item, int pos, long id) {
-
-
-
                         if (remove == false) {
-
-                            selected = new ArrayList<>();
                             for (int i = 0; i < adapter.getChildCount(); i++) {
+                                adapter.getChildAt(i).setTag(0);
                                 if (i == pos) {
-                                    adapter.getChildAt(i).setBackgroundColor(Color.GRAY);
-                                    if (!selected.contains(pos)) {
-                                        try {
-                                            selected.add(pos);
-                                        } catch (IndexOutOfBoundsException e) {
-
-                                        }
-                                        System.out.println(selected);
-                                    }
-                                } else {
-
+                                    adapter.getChildAt(i).setBackgroundColor(Color.LTGRAY);
+                                    adapter.getChildAt(i).setTag(1);
                                 }
                             }
+                            TextView input = findViewById(R.id.input_text);
+                            input.setEnabled(false);
                             remove = true;
-                        } else {
-                            for (int i = 0; i < selected.size(); i++) {
-                                int x = selected.get(i);
-                                System.out.println(selected);
-                                System.out.println(x);
-                                try { items.remove(x); itemsAdapter.notifyDataSetChanged();}
-                                catch (IndexOutOfBoundsException e) {}
-                                System.out.println(selected);
+                        } else if (remove == true) {
+                            ListView output = findViewById(R.id.list);
+//                            System.out.println("ChildCount: " + output.getChildCount());
+                            for (int i = output.getChildCount()-1; i >= 0; i--) {
+                                if (adapter.getChildAt(i).getTag().toString().equals("1")) {
+                                    String value = items.get(i);
+//                                    System.out.println(value);
+                                    for (int a = 0; a < items.size(); a++) {
+//                                        System.out.println("a: " + a);
+                                        if (items.get(a).equals(value)) {
+                                            if (a == i) {
+//                                                System.out.println("TRUE");
+                                                try {items.remove(a);itemsAdapter.notifyDataSetChanged();} catch (IndexOutOfBoundsException e) {System.out.println("Couldn't Remove");}
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
                             }
-                            for (int i = 0; i < adapter.getChildCount(); i++) {
-                                adapter.getChildAt(i).setBackgroundColor(Color.WHITE);
+                            for (int i = 0; i < output.getChildCount(); i++) {
+                                output.getChildAt(i).setBackgroundColor(Color.WHITE);
+                                output.getChildAt(i).setTag(0);
                             }
-                            selected = null;
                             remove = false;
+                            TextView input = findViewById(R.id.input_text);
+                            input.setEnabled(true);
                         }
                         return true;
                     }
                 });
-
     }
     public static boolean contains(int[] arr, int item) {
         for (int n : arr) {
@@ -113,39 +125,28 @@ public class MainActivity extends AppCompatActivity {
                         if (remove == true) {
                             for (int i = 0; i < adapter.getChildCount(); i++) {
                                 if (i == pos) {
-                                    if (selected.contains(pos)) {
+                                    if (adapter.getChildAt(pos).getTag().toString().equals("1")) {
                                         adapter.getChildAt(i).setBackgroundColor(Color.WHITE);
-                                        try {
-                                            selected.remove(pos);
-                                            System.out.println("Removed" + pos);
-                                        } catch (IndexOutOfBoundsException e) {
-
-                                        }
-
-                                        System.out.println(selected);
+                                        adapter.getChildAt(i).setTag(0);
                                     } else {
-                                        adapter.getChildAt(i).setBackgroundColor(Color.GRAY);
-                                        if (!selected.contains(pos)) {
-                                            try {
-                                                selected.add(pos);
-                                                System.out.println("Added" + pos);
-
-                                            } catch (IndexOutOfBoundsException e) {
-
-                                            }
-
-                                            System.out.println(selected);
-                                        }
+                                        adapter.getChildAt(i).setBackgroundColor(Color.LTGRAY);
+                                        adapter.getChildAt(i).setTag(1);
                                     }
                                 }
                             }
-                            if (selected.isEmpty()) {
+                            for (int i = 0; i < adapter.getChildCount(); i++) {
+                                if (adapter.getChildAt(i).getTag().toString().equals("1")) {
+                                    count = 0;
+                                } else if (adapter.getChildAt(i).getTag().toString().equals("0")) {
+                                    count += 1;
+                                }
+                            }
+                            if (adapter.getChildCount() == count) {
+                                count = 0;
                                 remove = false;
                             }
                         }
                     }
-
                 });
     }
-
 }
