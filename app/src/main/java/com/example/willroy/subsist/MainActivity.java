@@ -11,6 +11,12 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,11 +35,32 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         lvItems = (ListView) findViewById(R.id.list);
         items = new ArrayList<String>();
+        loadfromfile();
         itemsAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, items);
         lvItems.setAdapter(itemsAdapter);
         setupListViewListener();
         setupListViewListener2();
+    }
+
+    public void savetofile() {
+        File filesDir = getFilesDir();
+        File todoFile = new File(filesDir, "todo.txt");
+        try {
+            FileUtils.writeLines(todoFile, items);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void loadfromfile() {
+        File filesDir = getFilesDir();
+        File todoFile = new File(filesDir, "todo.txt");
+        try {
+            items = new ArrayList<String>(FileUtils.readLines(todoFile));
+        } catch (IOException e) {
+            items = new ArrayList<String>();
+        }
     }
 
     public void onClick(View v) {
@@ -55,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
 
             inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
                     InputMethodManager.HIDE_NOT_ALWAYS);
+
+            savetofile();
         } else if (remove == true) {
         }
     }
@@ -103,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
                             TextView input = findViewById(R.id.input_text);
                             input.setEnabled(true);
                         }
+                        savetofile();
                         return true;
                     }
                 });
@@ -146,6 +176,7 @@ public class MainActivity extends AppCompatActivity {
                                 remove = false;
                             }
                         }
+                        savetofile();
                     }
                 });
     }
